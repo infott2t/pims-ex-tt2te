@@ -1,6 +1,6 @@
-# 🛡️ PIMS (Personal Information Management System)
+# 🛡️ Let's study~. PIMS (Personal Information Management System).
 
-> **서비스 제공자가 사용자를 위해 개인정보를 안전하게 관리하기 위한 기초 시스템 뼈대(Scaffold)**
+> **서비스 제공자가 사용자를 위해 개인정보를 안전하게 관리하기 위한 기초 시스템 **
 
 ---
 
