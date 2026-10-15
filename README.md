@@ -69,13 +69,14 @@ pims-ex-tt2te/
 
 ## 🚀 5. 빠른 시작 (Getting Started)
 
-### 사전 요구사항
-- Node.js 18.x 이상 (before 프로젝트 실행 시)
+본 저장소는 **기존 프로토타입(`before/`)** 과 **새롭게 개발될 `Spring Boot` 프로젝트**, 2가지로 구분됩니다.
 
-### before (Node.js 프로토타입) 실행 방법
+### 5-1. `before/` (기존 Node.js 프로토타입) 실행 방법
+
+- **사전 요구사항**: Node.js 18.x 이상
 
 ```bash
-# 1. 저장소 복제 (Clone)
+# 1. 저장소 복제 및 before 디렉터리 이동
 git clone https://github.com/infott2t/pims-ex-tt2te.git
 cd pims-ex-tt2te/before
 
@@ -85,6 +86,14 @@ cp .env.example .env
 # 3. 서버 실행
 npm start
 ```
+
+---
+
+### 5-2. `Spring Boot` 프로젝트 실행 방법 (예정)
+
+> ⏳ **안내 (추후 업데이트 예정)**  
+> Spring Boot 기반 PIMS 프로젝트는 현재 준비 단계입니다.  
+> 프로젝트 생성 및 소스코드 작성이 완료된 후, 빌드 도구(Gradle 또는 Maven)를 포함한 구체적인 설치 및 실행 가이드를 이곳에 업데이트할 예정입니다.
 
 ---
 
