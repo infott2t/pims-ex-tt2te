@@ -27,25 +27,31 @@
 
 ## 📂 3. 디렉토리 구조 (Directory Structure)
 
+> 💡 **안내: Spring Boot 전환 예정**
+> 기존에 작성된 Node.js 기반 프로토타입 프로젝트는 **`before/`** 디렉터리로 이전하여 보관하고 있습니다.
+> 아직 본격적인 Spring Boot 코드 작성은 시작하지 않았으나, 향후 본 프로젝트는 **Spring Boot**로 새롭게 생성하여 제작될 예정입니다.
+
 ```text
 pims-ex-tt2te/
-├── src/
-│   ├── index.js                  # 서버 진입점 (HTTP 서버)
-│   ├── config/                   # 환경설정 및 상수
-│   │   └── config.js
-│   ├── controllers/              # 요청 처리 및 응답 제어
-│   │   └── userController.js
-│   ├── models/                   # 데이터 모델 및 인메모리 저장소
-│   │   └── userModel.js
-│   ├── routes/                   # API 엔드포인트 라우팅
-│   │   └── userRoutes.js
-│   └── services/                 # 비즈니스 로직 및 개인정보 보호 기능
-│       └── privacyService.js     # 데이터 암호화, 마스킹, 가명화 예제
-├── .env.example                  # 환경 변수 예시 파일
-├── .gitignore                    # Git 관리 제외 파일 목록
-├── LICENSE                       # MIT 라이선스
-├── package.json                  # 프로젝트 메타데이터 및 의존성
-└── README.md                     # 프로젝트 안내 문서
+├── before/                           # [이전 프로토타입] Node.js 기반 PIMS 뼈대
+│   ├── src/
+│   │   ├── index.js                  # 서버 진입점 (HTTP 서버)
+│   │   ├── config/                   # 환경설정 및 상수
+│   │   │   └── config.js
+│   │   ├── controllers/              # 요청 처리 및 응답 제어
+│   │   │   └── userController.js
+│   │   ├── models/                   # 데이터 모델 및 인메모리 저장소
+│   │   │   └── userModel.js
+│   │   ├── routes/                   # API 엔드포인트 라우팅
+│   │   │   └── userRoutes.js
+│   │   └── services/                 # 비즈니스 로직 및 개인정보 보호 기능
+│   │       └── privacyService.js     # 데이터 암호화, 마스킹, 가명화 예제
+│   ├── .env.example                  # 환경 변수 예시 파일
+│   └── package.json                  # 프로젝트 메타데이터 및 의존성
+├── (Spring Boot 프로젝트)            # 🚀 향후 Spring Boot 기반으로 새롭게 구현 예정
+├── .gitignore                        # Git 관리 제외 파일 목록
+├── LICENSE                           # MIT 라이선스
+└── README.md                         # 프로젝트 안내 문서
 ```
 
 ---
@@ -64,22 +70,19 @@ pims-ex-tt2te/
 ## 🚀 5. 빠른 시작 (Getting Started)
 
 ### 사전 요구사항
-- Node.js 18.x 이상
+- Node.js 18.x 이상 (before 프로젝트 실행 시)
 
-### 설치 및 실행
+### before (Node.js 프로토타입) 실행 방법
 
 ```bash
 # 1. 저장소 복제 (Clone)
-git clone https://github.com/<your-username>/pims-ex-tt2te.git
-cd pims-ex-tt2te
+git clone https://github.com/infott2t/pims-ex-tt2te.git
+cd pims-ex-tt2te/before
 
-# 2. 의존성 설치 (필요 시)
-npm install
-
-# 3. 환경 변수 설정
+# 2. 환경 변수 설정
 cp .env.example .env
 
-# 4. 서버 실행
+# 3. 서버 실행
 npm start
 ```
 

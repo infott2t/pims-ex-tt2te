@@ -19,3 +19,13 @@ Thumbs.db
 # IDEs
 .vscode/
 .idea/
+*.iml
+
+# Java / Spring Boot (Gradle & Maven)
+target/
+build/
+out/
+.gradle/
+*.class
+*.jar
+*.war
