@@ -36,22 +36,25 @@
 ```text
 pims-ex-tt2te/
 ├── before/                           # [이전 프로토타입] Node.js 기반 PIMS 뼈대
-│   ├── src/
-│   │   ├── index.js                  # 서버 진입점 (HTTP 서버)
-│   │   ├── config/                   # 환경설정 및 상수
-│   │   │   └── config.js
-│   │   ├── controllers/              # 요청 처리 및 응답 제어
-│   │   │   └── userController.js
-│   │   ├── models/                   # 데이터 모델 및 인메모리 저장소
-│   │   │   └── userModel.js
-│   │   ├── routes/                   # API 엔드포인트 라우팅
-│   │   │   └── userRoutes.js
-│   │   └── services/                 # 비즈니스 로직 및 개인정보 보호 기능
-│   │       └── privacyService.js     # 데이터 암호화, 마스킹, 가명화 예제
-│   ├── .env.example                  # 환경 변수 예시 파일
-│   └── package.json                  # 프로젝트 메타데이터 및 의존성
-├── (Spring Boot 프로젝트)            # 🚀 향후 Spring Boot 기반으로 새롭게 구현 예정
-├── .gitignore                        # Git 관리 제외 파일 목록
+│   ├── src/                          # Express 기반 아키텍처 및 서비스
+│   ├── .env.example
+│   └── package.json
+├── src/
+│   ├── main/
+│   │   ├── java/org/example/         # Spring Boot 소스코드
+│   │   │   ├── PimsApplication.java  # 진입점
+│   │   │   ├── controller/           # WelcomeController, NaverLoginController
+│   │   │   ├── domain/               # User, PrivacyConsentLog, PrivacyAccessLog 엔티티
+│   │   │   ├── dto/                  # NaverUserDto
+│   │   │   ├── repository/           # UserRepository (Spring Data JPA)
+│   │   │   └── service/              # NaverLoginService (OAuth2 토큰 및 프로필 조회)
+│   │   ├── resources/
+│   │   │   └── application.properties.example # 설정 템플릿 (.gitignore 보호)
+│   │   └── webapp/WEB-INF/views/     # JSP 뷰 페이지 (welcome.jsp, login.jsp, profile.jsp)
+├── build.gradle                      # Spring Boot 2.6.6 및 의존성 설정
+├── settings.gradle                   # 프로젝트명 (rootProject.name = 'pims-ex-tt2te')
+├── gradlew, gradlew.bat, gradle/     # Gradle 7.6.4 Wrapper
+├── .gitignore                        # Git 관리 제외 파일 목록 (application.properties 등 제외)
 ├── LICENSE                           # MIT 라이선스
 └── README.md                         # 프로젝트 안내 문서
 ```
@@ -108,11 +111,87 @@ npm start
 
 ---
 
-### 5-2. `Spring Boot` 프로젝트 실행 방법 (예정)
+### 5-2. `Spring Boot` 프로젝트 실행 방법
 
-> ⏳ **안내 (추후 업데이트 예정)**  
-> Spring Boot 기반 PIMS 프로젝트는 현재 준비 단계입니다.  
-> 프로젝트 생성 및 소스코드 작성이 완료된 후, 빌드 도구(Gradle 또는 Maven)를 포함한 구체적인 설치 및 실행 가이드를 이곳에 업데이트할 예정입니다.
+- **사전 요구사항**: Java (JDK) 11 이상 (Gradle Wrapper 포함)
+
+```bash
+# 1. 저장소 복제 후 루트 디렉터리로 이동
+git clone https://github.com/infott2t/pims-ex-tt2te.git
+cd pims-ex-tt2te
+
+# 2. 환경 설정 파일 생성 (템플릿 복사)
+# Windows PowerShell:
+Copy-Item src/main/resources/application.properties.example src/main/resources/application.properties
+# Linux / macOS:
+cp src/main/resources/application.properties.example src/main/resources/application.properties
+
+# 3. application.properties 파일에 네이버 Client ID / Secret 입력 (아래 5-3 가이드 참고)
+
+# 4. Spring Boot 애플리케이션 빌드 및 실행
+# Windows:
+.\gradlew.bat bootRun
+# Linux / macOS:
+./gradlew bootRun
+
+# 5. 브라우저 접속
+# 메인 웰컴 페이지: http://localhost:8080/
+# 네이버 로그인 페이지: http://localhost:8080/login
+```
+
+---
+
+### 5-3. 🔐 네이버 간편로그인(OAuth 2.0) 설정 가이드
+
+본 프로젝트는 네이버 아이디로 간편로그인을 지원합니다. 실제 네이버 계정으로 연동하려면 [네이버 개발자 센터(Naver Developers)](https://developers.naver.com/)에서 애플리케이션을 등록하고 키를 발급받아야 합니다.
+
+#### 1단계: 네이버 개발자 센터에서 Client ID & Secret 발급
+1. [네이버 개발자 센터](https://developers.naver.com/)에 접속하여 로그인합니다.
+2. 상단 메뉴에서 **Application > 애플리케이션 등록**을 클릭합니다.
+3. 애플리케이션 정보를 입력합니다:
+   - **애플리케이션 이름**: `PIMS 개인정보 관리` (자유롭게 입력 가능)
+   - **사용 API**: `네이버 로그인` 선택
+   - **로그인 권한 설정 (제공 항목)**:
+     - **회원이름**: `필수` 체크
+     - **전자우편주소**: `필수` 체크
+     - **별명(닉네임)**: `선택` 체크
+     - **프로필 사진**: `선택` 체크
+     - **휴대전화번호**: `선택` 체크
+   - **로그인 오픈 API 서비스 환경 (PC웹)**:
+     - **서비스 URL**: `http://localhost:8080`
+     - **네이버로그인 Callback URL**: `http://localhost:8080/auth/naver/callback`
+4. **등록하기** 버튼을 누르면 발급된 **Client ID**와 **Client Secret**을 확인할 수 있습니다.
+
+#### 2단계: `application.properties` 파일 위치 및 작성 방법
+- 파일 생성 경로: **`src/main/resources/application.properties`**
+- 저장소에 포함된 예시 파일(`src/main/resources/application.properties.example`)을 복사하여 `application.properties` 파일을 생성하고 아래와 같이 발급받은 키를 입력합니다:
+
+```properties
+server.port=8080
+
+# View Resolver for JSP
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+
+# Naver OAuth2 Configuration (네이버 개발자 센터에서 발급받은 값)
+naver.client-id=발급받은_네이버_Client_ID
+naver.client-secret=발급받은_네이버_Client_Secret
+naver.redirect-uri=http://localhost:8080/auth/naver/callback
+
+# 초기 구동을 위한 미설정 모듈 자동설정 제외
+spring.autoconfigure.exclude=\
+  org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
+  org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,\
+  org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration
+```
+
+> 🛡️ **[보안 안내] Git Ignore 처리**  
+> `src/main/resources/application.properties` 파일에는 유출되면 안 되는 비밀키(`Client Secret`)가 포함되므로, 본 프로젝트의 **`.gitignore`에 등록되어 GitHub 원격 저장소에 절대 커밋/푸시되지 않도록 안전하게 보호**되고 있습니다. 키가 없는 템플릿 파일인 `application.properties.example`만 저장소에서 공유됩니다.
+
+#### 3단계: 로컬 테스트 모드 (Mock Test Mode) 안내
+- 네이버 개발자 센터 키를 아직 발급받지 않았더라도, 로그인 화면([http://localhost:8080/login](http://localhost:8080/login))에서 **`🧪 개발·시연용 네이버 간편로그인 (Mock Test)`** 버튼을 누르면 즉시 가상 네이버 사용자 정보로 로그인 및 마스킹 화면을 체험하실 수 있습니다.
 
 ---
 

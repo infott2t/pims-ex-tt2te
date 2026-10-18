@@ -1,0 +1,19 @@
+server.port=8080
+
+# View Resolver for JSP
+spring.mvc.view.prefix=/WEB-INF/views/
+spring.mvc.view.suffix=.jsp
+
+# Naver OAuth2 Configuration
+# https://developers.naver.com/ 에서 애플리케이션 등록 후 발급받은 값을 입력하세요.
+naver.client-id=YOUR_NAVER_CLIENT_ID
+naver.client-secret=YOUR_NAVER_CLIENT_SECRET
+naver.redirect-uri=http://localhost:8080/auth/naver/callback
+
+# Exclude unconfigured auto-configurations for initial startup
+spring.autoconfigure.exclude=\
+  org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration,\
+  org.springframework.boot.autoconfigure.orm.jpa.HibernateJpaAutoConfiguration,\
+  org.springframework.boot.autoconfigure.flyway.FlywayAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.servlet.SecurityAutoConfiguration,\
+  org.springframework.boot.autoconfigure.security.oauth2.client.servlet.OAuth2ClientAutoConfiguration

@@ -29,3 +29,9 @@ out/
 *.class
 *.jar
 *.war
+
+# Application Properties & Secrets
+**/src/main/resources/application.properties
+application.properties
+application-*.properties
+!application.properties.example

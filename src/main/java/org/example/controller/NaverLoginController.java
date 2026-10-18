@@ -1,0 +1,136 @@
+package org.example.controller;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.example.dto.NaverUserDto;
+import org.example.service.NaverLoginService;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import javax.servlet.http.HttpSession;
+
+@Slf4j
+@Controller
+@RequiredArgsConstructor
+public class NaverLoginController {
+
+    private final NaverLoginService naverLoginService;
+
+    public static final String SESSION_USER_KEY = "loginUser";
+
+    /**
+     * 로그인 메인 화면
+     */
+    @GetMapping("/login")
+    public String loginPage(HttpSession session, Model model) {
+        boolean configured = naverLoginService.isConfigured();
+        model.addAttribute("naverConfigured", configured);
+        model.addAttribute("clientId", naverLoginService.getClientId());
+        model.addAttribute("redirectUri", naverLoginService.getRedirectUri());
+        
+        if (configured) {
+            String authorizeUrl = naverLoginService.buildAuthorizeUrl(session);
+            model.addAttribute("naverAuthUrl", authorizeUrl);
+        } else {
+            model.addAttribute("naverAuthUrl", "/auth/naver/test-login");
+        }
+        return "login";
+    }
+
+    /**
+     * 네이버 로그인 시작 (네이버 로그인 인증 페이지로 리다이렉트)
+     */
+    @GetMapping("/auth/naver/login")
+    public String naverLogin(HttpSession session) {
+        if (!naverLoginService.isConfigured()) {
+            log.info("Naver client key is not configured. Redirecting to test login.");
+            return "redirect:/auth/naver/test-login";
+        }
+        String authorizeUrl = naverLoginService.buildAuthorizeUrl(session);
+        return "redirect:" + authorizeUrl;
+    }
+
+    /**
+     * 네이버 OAuth2 Callback 수신
+     */
+    @GetMapping("/auth/naver/callback")
+    public String naverCallback(
+            @RequestParam(value = "code", required = false) String code,
+            @RequestParam(value = "state", required = false) String state,
+            @RequestParam(value = "error", required = false) String error,
+            @RequestParam(value = "error_description", required = false) String errorDescription,
+            HttpSession session,
+            Model model) {
+
+        if (error != null) {
+            log.error("Naver login error: {}, description: {}", error, errorDescription);
+            model.addAttribute("errorMessage", "네이버 로그인 인증 취소 또는 오류: " + errorDescription);
+            return "login";
+        }
+
+        // 세션의 state와 일치하는지 CSRF 검증
+        String savedState = (String) session.getAttribute(NaverLoginService.SESSION_STATE_KEY);
+        if (savedState == null || !savedState.equals(state)) {
+            log.warn("Invalid OAuth2 state. saved={}, received={}", savedState, state);
+            model.addAttribute("errorMessage", "유효하지 않은 요청 세션(CSRF 토큰 불일치)입니다.");
+            return "login";
+        }
+
+        // Access Token 발급 요청
+        String accessToken = naverLoginService.getAccessToken(code, state);
+        if (accessToken == null) {
+            model.addAttribute("errorMessage", "네이버 접근 토큰(Access Token) 발급에 실패하였습니다.");
+            return "login";
+        }
+
+        // 사용자 프로필 정보 조회
+        NaverUserDto userProfile = naverLoginService.getUserProfile(accessToken);
+        if (userProfile == null) {
+            model.addAttribute("errorMessage", "네이버 사용자 프로필 정보를 불러오지 못했습니다.");
+            return "login";
+        }
+
+        // 세션에 로그인 사용자 저장
+        session.setAttribute(SESSION_USER_KEY, userProfile);
+        session.removeAttribute(NaverLoginService.SESSION_STATE_KEY);
+
+        log.info("Naver user login success: email={}, name={}", userProfile.getEmail(), userProfile.getName());
+        return "redirect:/user/profile";
+    }
+
+    /**
+     * 개발 및 테스트용 네이버 간편로그인 시뮬레이션
+     */
+    @GetMapping("/auth/naver/test-login")
+    public String naverTestLogin(HttpSession session) {
+        NaverUserDto mockUser = naverLoginService.createMockNaverUser();
+        session.setAttribute(SESSION_USER_KEY, mockUser);
+        log.info("Mock Naver user login: {}", mockUser);
+        return "redirect:/user/profile";
+    }
+
+    /**
+     * 사용자 프로필 / 개인정보 대시보드 화면
+     */
+    @GetMapping("/user/profile")
+    public String userProfile(HttpSession session, Model model) {
+        NaverUserDto user = (NaverUserDto) session.getAttribute(SESSION_USER_KEY);
+        if (user == null) {
+            return "redirect:/login";
+        }
+        model.addAttribute("user", user);
+        return "profile";
+    }
+
+    /**
+     * 로그아웃 처리
+     */
+    @GetMapping("/auth/logout")
+    public String logout(HttpSession session) {
+        session.removeAttribute(SESSION_USER_KEY);
+        session.invalidate();
+        return "redirect:/";
+    }
+}
