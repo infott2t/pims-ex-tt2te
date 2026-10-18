@@ -236,8 +236,26 @@
                 <td>${user.birthyear != null ? user.birthyear : '-'}년 ${user.birthday != null ? user.birthday : '-'}</td>
             </tr>
             <tr>
+                <th>DB 회원 고유번호</th>
+                <td>
+                    <span style="font-weight: 700; color: #60a5fa;"># ${user.dbId}</span>
+                    <span style="color: #64748b; font-size: 12px; margin-left: 6px;">(MySQL pims_user 테이블 PK)</span>
+                </td>
+            </tr>
+            <tr>
                 <th>개인정보 수집 경로</th>
                 <td>네이버 간편로그인 (OAuth 2.0 API)</td>
+            </tr>
+            <tr>
+                <th>개인정보 수집·동의 일시</th>
+                <td>${user.consentDate != null ? user.consentDate : '-'}</td>
+            </tr>
+            <tr>
+                <th>개인정보 파기 예정일</th>
+                <td>
+                    <span style="color: #f59e0b; font-weight: 600;">${user.retentionExpireAt != null ? user.retentionExpireAt : '-'}</span>
+                    <span style="color: #64748b; font-size: 12px; margin-left: 6px;">(수집 후 1년 보유 만료 원칙)</span>
+                </td>
             </tr>
         </table>
 
@@ -245,6 +263,11 @@
         <div class="button-group">
             <a href="/" class="btn btn-primary">홈으로 이동</a>
             <a href="/auth/logout" class="btn btn-logout">로그아웃</a>
+            <form action="/user/purge" method="post" style="display: inline; flex: 1;" onsubmit="return confirm('정말로 개인정보를 복구 불가능하도록 영구 파기(탈퇴)하시겠습니까?');">
+                <button type="submit" class="btn btn-logout" style="width: 100%; cursor: pointer; border-color: rgba(239, 68, 68, 0.7); background: rgba(239, 68, 68, 0.3);">
+                    🗑️ 개인정보 즉시 파기 (탈퇴)
+                </button>
+            </form>
         </div>
     </div>
 </body>

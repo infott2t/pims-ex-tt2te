@@ -241,6 +241,12 @@
             </div>
         </div>
 
+        <c:if test="${param.purged == 'true'}">
+            <div style="background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 14px; border-radius: 10px; margin-bottom: 20px; font-size: 14px;">
+                ✅ 개인정보가 복구 불가능하도록 안전하게 영구 파기(탈퇴) 처리되었습니다.
+            </div>
+        </c:if>
+
         <div class="greeting-card">
             <h2>${greeting}</h2>
             <p>Spring Boot 와 JSP 뷰 템플릿 엔진 기반의 개인정보 관리 기초 뼈대(Scaffold)입니다.</p>
@@ -252,7 +258,7 @@
                 <c:when test="${not empty loginUser}">
                     <div class="auth-card-title">
                         <span>👤 로그인 사용자 정보</span>
-                        <span style="color: #03C75A; font-size: 12px;">● NAVER 연동됨</span>
+                        <a href="/admin/users" style="color: #60a5fa; font-size: 12px; text-decoration: none;">전체 DB 현황 대시보드 →</a>
                     </div>
                     <div class="logged-user-box">
                         <div class="logged-user-info">

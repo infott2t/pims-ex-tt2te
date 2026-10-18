@@ -24,6 +24,9 @@ public class NaverUserDto implements Serializable {
     private String birthyear;    // 출생연도
     private String birthday;     // 생일 (MM-DD)
     private String loginType;    // NAVER or NAVER_TEST
+    private Long dbId;           // 데이터베이스 PK ID
+    private String retentionExpireAt; // 개인정보 파기 예정일
+    private String consentDate;  // 동의 일시
 
     // PIMS 보안 마스킹 편의 메서드
     public String getMaskedEmail() {

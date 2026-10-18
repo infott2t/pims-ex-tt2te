@@ -17,6 +17,7 @@ import javax.servlet.http.HttpSession;
 public class NaverLoginController {
 
     private final NaverLoginService naverLoginService;
+    private final org.example.service.UserService userService;
 
     public static final String SESSION_USER_KEY = "loginUser";
 
@@ -61,6 +62,7 @@ public class NaverLoginController {
             @RequestParam(value = "state", required = false) String state,
             @RequestParam(value = "error", required = false) String error,
             @RequestParam(value = "error_description", required = false) String errorDescription,
+            javax.servlet.http.HttpServletRequest request,
             HttpSession session,
             Model model) {
 
@@ -92,22 +94,26 @@ public class NaverLoginController {
             return "login";
         }
 
+        // 데이터베이스 영속화 (회원 저장/갱신 및 감사 로그 기록)
+        userProfile = userService.processNaverLogin(userProfile, request.getRemoteAddr());
+
         // 세션에 로그인 사용자 저장
         session.setAttribute(SESSION_USER_KEY, userProfile);
         session.removeAttribute(NaverLoginService.SESSION_STATE_KEY);
 
-        log.info("Naver user login success: email={}, name={}", userProfile.getEmail(), userProfile.getName());
+        log.info("Naver user login success: email={}, name={}, dbId={}", userProfile.getEmail(), userProfile.getName(), userProfile.getDbId());
         return "redirect:/user/profile";
     }
 
     /**
-     * 개발 및 테스트용 네이버 간편로그인 시뮬레이션
+     * 개발 및 테스트용 네이버 간편로그인 시뮬레이션 (DB 연동 포함)
      */
     @GetMapping("/auth/naver/test-login")
-    public String naverTestLogin(HttpSession session) {
+    public String naverTestLogin(javax.servlet.http.HttpServletRequest request, HttpSession session) {
         NaverUserDto mockUser = naverLoginService.createMockNaverUser();
+        mockUser = userService.processNaverLogin(mockUser, request.getRemoteAddr());
         session.setAttribute(SESSION_USER_KEY, mockUser);
-        log.info("Mock Naver user login: {}", mockUser);
+        log.info("Mock Naver user login: dbId={}, email={}", mockUser.getDbId(), mockUser.getEmail());
         return "redirect:/user/profile";
     }
 
@@ -132,5 +138,28 @@ public class NaverLoginController {
         session.removeAttribute(SESSION_USER_KEY);
         session.invalidate();
         return "redirect:/";
+    }
+
+    /**
+     * 개인정보 즉시 파기 (회원 탈퇴)
+     */
+    @org.springframework.web.bind.annotation.PostMapping("/user/purge")
+    public String purgeUser(javax.servlet.http.HttpServletRequest request, HttpSession session) {
+        NaverUserDto user = (NaverUserDto) session.getAttribute(SESSION_USER_KEY);
+        if (user != null && user.getDbId() != null) {
+            userService.purgeUser(user.getDbId(), request.getRemoteAddr());
+        }
+        session.removeAttribute(SESSION_USER_KEY);
+        session.invalidate();
+        return "redirect:/?purged=true";
+    }
+
+    /**
+     * PIMS 학습용 전체 사용자 및 개인정보 보호 현황 목록
+     */
+    @GetMapping("/admin/users")
+    public String adminUsers(Model model) {
+        model.addAttribute("users", userService.findAllUsers());
+        return "admin_users";
     }
 }
