@@ -27,6 +27,7 @@ public class NaverUserDto implements Serializable {
     private Long dbId;           // 데이터베이스 PK ID
     private String retentionExpireAt; // 개인정보 파기 예정일
     private String consentDate;  // 동의 일시
+    private String lastLoginAt;  // 방금(최근) 로그인 일시
 
     // PIMS 보안 마스킹 편의 메서드
     public String getMaskedEmail() {

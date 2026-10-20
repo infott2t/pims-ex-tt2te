@@ -174,6 +174,50 @@
             background: rgba(239, 68, 68, 0.3);
             color: #ffffff;
         }
+        .last-login-banner {
+            margin-top: 14px;
+            padding: 10px 14px;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            border-radius: 8px;
+            font-size: 13px;
+            color: #a7f3d0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .login-history-section {
+            margin-top: 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 14px;
+        }
+        .login-history-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #60a5fa;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+        }
+        .history-table th, .history-table td {
+            padding: 8px 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+        }
+        .history-table th {
+            color: #94a3b8;
+            font-weight: 600;
+            background: rgba(15, 23, 42, 0.5);
+        }
+        .history-table td {
+            color: #e2e8f0;
+        }
 
         .info-grid {
             display: grid;
@@ -274,6 +318,51 @@
                             <a href="/user/profile" class="btn-sm btn-sm-profile">내 정보 관리</a>
                             <a href="/auth/logout" class="btn-sm btn-sm-logout">로그아웃</a>
                         </div>
+                    </div>
+
+                    <!-- 방금 로그인한 시각 표시 -->
+                    <div class="last-login-banner">
+                        <span>🕒 <strong>방금 로그인한 시각:</strong> ${not empty loginUser.lastLoginAt ? loginUser.lastLoginAt : currentTime}</span>
+                        <span style="font-size: 11px; color: #34d399; font-weight: 600;">DB 기록 완료</span>
+                    </div>
+
+                    <!-- 로그인한 사용자의 DB 로그인 이력 표시 -->
+                    <div class="login-history-section">
+                        <div class="login-history-title">
+                            📋 내 로그인 기록 (DB 저장 이력)
+                        </div>
+                        <table class="history-table">
+                            <thead>
+                                <tr>
+                                    <th>번호</th>
+                                    <th>로그인 일시</th>
+                                    <th>로그인 방식</th>
+                                    <th>접속 IP</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <c:forEach var="history" items="${loginHistories}" varStatus="status">
+                                    <tr>
+                                        <td>
+                                            #${history.id}
+                                            <c:if test="${status.first}">
+                                                <span style="background: rgba(16, 185, 129, 0.2); color: #34d399; padding: 1px 6px; border-radius: 4px; font-size: 10px; margin-left: 4px;">방금</span>
+                                            </c:if>
+                                        </td>
+                                        <td style="font-weight: 600; color: #f8fafc;">${history.formattedLoginAt}</td>
+                                        <td>${history.loginType}</td>
+                                        <td style="color: #94a3b8; font-family: monospace;">${history.ipAddress}</td>
+                                    </tr>
+                                </c:forEach>
+                                <c:if test="${empty loginHistories}">
+                                    <tr>
+                                        <td colspan="4" style="text-align: center; color: #64748b; padding: 12px;">
+                                            저장된 로그인 기록이 없습니다.
+                                        </td>
+                                    </tr>
+                                </c:if>
+                            </tbody>
+                        </table>
                     </div>
                 </c:when>
                 <c:otherwise>

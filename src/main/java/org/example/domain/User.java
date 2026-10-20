@@ -86,6 +86,8 @@ public class User {
 
     private LocalDateTime purgedAt; // 완전 파기(복구 불가 덮어쓰기) 일시
 
+    private LocalDateTime lastLoginAt; // 최근 로그인 일시
+
     @CreationTimestamp
     @Column(updatable = false)
     private LocalDateTime createdAt;
@@ -128,6 +130,7 @@ public class User {
                 .consentGiven(true)
                 .consentDate(now)
                 .retentionExpireAt(now.plusYears(1)) // 기본 보유기간 1년
+                .lastLoginAt(now)
                 .isDeleted(false)
                 .build();
     }

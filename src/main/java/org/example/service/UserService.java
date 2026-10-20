@@ -6,14 +6,18 @@ import org.example.domain.OAuthProvider;
 import org.example.domain.PrivacyAccessLog;
 import org.example.domain.PrivacyConsentLog;
 import org.example.domain.User;
+import org.example.domain.UserLoginHistory;
 import org.example.dto.NaverUserDto;
 import org.example.repository.PrivacyAccessLogRepository;
 import org.example.repository.PrivacyConsentLogRepository;
+import org.example.repository.UserLoginHistoryRepository;
 import org.example.repository.UserRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Optional;
 
 @Slf4j
@@ -24,6 +28,7 @@ public class UserService {
     private final UserRepository userRepository;
     private final PrivacyConsentLogRepository consentLogRepository;
     private final PrivacyAccessLogRepository accessLogRepository;
+    private final UserLoginHistoryRepository loginHistoryRepository;
 
     private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
@@ -36,15 +41,18 @@ public class UserService {
         
         Optional<User> existingUserOpt = userRepository.findByProviderAndProviderIdAndIsDeletedFalse(provider, dto.getId());
         User user;
+        LocalDateTime loginTime = LocalDateTime.now();
 
         if (existingUserOpt.isPresent()) {
             user = existingUserOpt.get();
-            // 프로필 정보 업데이트
+            // 프로필 정보 및 최근 로그인 시각 업데이트
             user.setName(dto.getName());
             user.setNickname(dto.getNickname());
             user.setEmail(dto.getEmail());
             user.setPhone(dto.getMobile());
             user.setProfileImageUrl(dto.getProfileImage());
+            user.setLastLoginAt(loginTime);
+            user = userRepository.save(user);
             log.info("Existing user logged in via Naver. DB ID: {}, Email: {}", user.getId(), user.getEmail());
         } else {
             // 신규 사용자 등록
@@ -60,6 +68,7 @@ public class UserService {
                     dto.getProfileImage()
             );
             user.setProvider(provider);
+            user.setLastLoginAt(loginTime);
             user = userRepository.save(user);
             log.info("New user registered via Naver. DB ID: {}, Email: {}", user.getId(), user.getEmail());
 
@@ -73,7 +82,16 @@ public class UserService {
             consentLogRepository.save(consentLog);
         }
 
-        // 2. 개인정보 열람 및 접속 감사 로그 기록
+        // 2. 사용자 로그인 기록 DB 저장
+        UserLoginHistory loginHistory = UserLoginHistory.builder()
+                .user(user)
+                .loginType(dto.getLoginType() != null ? dto.getLoginType() : provider.name())
+                .ipAddress(ipAddress)
+                .loginAt(loginTime)
+                .build();
+        loginHistoryRepository.save(loginHistory);
+
+        // 3. 개인정보 열람 및 접속 감사 로그 기록
         PrivacyAccessLog accessLog = PrivacyAccessLog.builder()
                 .accessorId(user.getId())
                 .targetUserId(user.getId())
@@ -85,6 +103,7 @@ public class UserService {
 
         // DTO에 DB 정보 매핑
         dto.setDbId(user.getId());
+        dto.setLastLoginAt(loginTime.format(DATE_FORMATTER));
         if (user.getConsentDate() != null) {
             dto.setConsentDate(user.getConsentDate().format(DATE_FORMATTER));
         }
@@ -93,6 +112,14 @@ public class UserService {
         }
 
         return dto;
+    }
+
+    /**
+     * 특정 로그인 사용자의 로그인 이력 조회 (최신순 10건)
+     */
+    @Transactional(readOnly = true)
+    public List<UserLoginHistory> findLoginHistoriesByUserId(Long userId) {
+        return loginHistoryRepository.findTop10ByUserIdOrderByLoginAtDesc(userId);
     }
 
     /**
