@@ -207,7 +207,7 @@
             </div>
             <div class="guide-item">
                 - 클라이언트 ID:<br>
-                <code>${clientId}</code>
+                <code>******************** (보안 가림 처리됨)</code>
             </div>
             <div class="guide-item" style="margin-top: 8px; font-size: 12px; color: #64748b;">
                 * 네이버 개발자센터 등록 전에는 위의 <strong>개발·시연용 Mock 로그인</strong>을 통해 프로필 수집 및 마스킹 기능을 바로 체험하실 수 있습니다.

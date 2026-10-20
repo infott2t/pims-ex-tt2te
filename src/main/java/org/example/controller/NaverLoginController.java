@@ -28,12 +28,10 @@ public class NaverLoginController {
     public String loginPage(HttpSession session, Model model) {
         boolean configured = naverLoginService.isConfigured();
         model.addAttribute("naverConfigured", configured);
-        model.addAttribute("clientId", naverLoginService.getClientId());
         model.addAttribute("redirectUri", naverLoginService.getRedirectUri());
         
         if (configured) {
-            String authorizeUrl = naverLoginService.buildAuthorizeUrl(session);
-            model.addAttribute("naverAuthUrl", authorizeUrl);
+            model.addAttribute("naverAuthUrl", "/auth/naver/login");
         } else {
             model.addAttribute("naverAuthUrl", "/auth/naver/test-login");
         }
